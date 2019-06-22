@@ -1,0 +1,8 @@
+<launch>
+    <rosparam param="line_info_topic">/line_info</rosparam>
+    <rosparam param="line_control_topic">/line_control</rosparam>
+    <rosparam param="motors_info_topic">/motors_info</rosparam>
+    <rosparam param="traffic_signs_info_topic">/traffic_signs_info</rosparam>
+    <rosparam param="traffic_lights_info_topic">/traffic_lights_info</rosparam>
+    <rosparam param="image_topic">/clean_image/image_raw</rosparam>
+</launch>

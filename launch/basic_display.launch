@@ -1,0 +1,8 @@
+<launch>
+    <rosparam param="display_result">True</rosparam>
+
+    <include
+            file="$(find aist)/launch/basic.launch"
+            clear_params="false"
+            pass_all_args="true"/>
+</launch>
