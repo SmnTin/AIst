@@ -21,7 +21,7 @@ public:
 
     void update(Data & data) override {
         State<Data>::_stateMachine->push(std::make_shared<ProblematicRouteState>());
-//        State<Data>::_stateMachine->push(std::make_shared<RedSignalState>());
+        State<Data>::_stateMachine->push(std::make_shared<RedSignalState>());
     }
 };
 

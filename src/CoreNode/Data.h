@@ -23,6 +23,7 @@ struct Data {
     bool stopLine = false;
     bool forkLine = false;
     bool returnToLineAlgo = true;
+    bool useDeviation2 = false;
 
     bool dummy = false;
 
@@ -31,6 +32,9 @@ struct Data {
 
     std::queue<aist::TrafficLightsInfo> trafficLights;
 
+    double PID_P = 1;
+    double PID_I = 1;
+    double PID_D = 1;
     double PID_B = 1;
     double PID_K = 1;
     PID pid;

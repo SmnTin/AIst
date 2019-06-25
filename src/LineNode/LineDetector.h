@@ -22,7 +22,8 @@ struct LineDetectorInfo
 	bool fork = false;
 	vector<Line> lines;
 	int oldDeviation = 0;
-	int deviation = 0;
+    int deviation = 0;
+    int deviation2 = 0;
 	bool stopline = false;
 	bool lost = true;
 };
@@ -31,10 +32,12 @@ class LineDetector
 {
 public:
 	explicit LineDetector(bool videowriting = false, int _bigRoiHeight = 200, int _roi_row_start = 430, int _roi_height = 20,
-			int _window = 430, int _erosion_size = 3, int _minAng = 5, int _imgOffset = 40) :
+			int _window = 430, int _erosion_size = 3, int _minAng = 5, int _imgOffset = 50) :
 		bigRoiHeight(_bigRoiHeight), roi_height(_roi_height), roi_row_start(_roi_row_start),
 		erosion_size(_erosion_size), minAng(_minAng), window(_window), sorterCenter(_window / 2),
 		imgOffset(_imgOffset), _videowriting(videowriting) {
+
+		setDirection(0);
 
 		if(videowriting)
 			initVideoWriting();
@@ -52,6 +55,9 @@ private:
 //		bool operator() (const Point &a, const Point &b);
 //	};
 
+    int superDetection(Mat src, Mat thrMat);
+
+	void updateRoiColStart(Mat & src);
 	void _offsetImage(Mat &image, const cv::Scalar & bordercolour, int xoffset, int yoffset);
 
 	void preprocessImage(Mat & src, Mat & dst);
@@ -79,7 +85,10 @@ private:
 	int minAng;
 	int roi_row_start;
 	int roi_height;
+	int roiColStart;
 	int bigRoiHeight;
+
+	const int superRoiRows = 4;
 
 	int sorterCenter;
 

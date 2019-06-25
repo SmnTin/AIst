@@ -5,20 +5,20 @@
             clear_params="false"
             pass_all_args="true"/>
 
-    <include file="$(find aist)/launch/camera0.launch" />
+    <include file="$(find aist)/launch/camera.launch" />
     <node pkg="aist" type="line_node2" name="line_node" output="screen" />
     <node pkg="aist" type="traffic_lights_nn_node" name="traffic_lights_node"/>
     <node pkg="aist" type="traffic_signs_node" name="traffic_signs_node" output="screen"/>
     <node pkg="aist" type="core_node" name="core_node" output="screen">
-        <param name="PID_P" value="0.35" />
+        <param name="PID_P" value="0.32" />
         <param name="PID_I" value="0.0" />
-        <param name="PID_D" value="0.15" />
+        <param name="PID_D" value="0.14" />
         <param name="default_speed" value="0.5" />
         <param name="PID_K" value="0.58" />
         <param name="PID_B" value="0.67" />
         <param name="PID_minI" value="-10.0" />
         <param name="PID_maxI" value="10.0" />
-        <param name="mode" value="UnknownPath" />
+        <param name="mode" value="ProblematicRoute" />
     </node>
 
 </launch>

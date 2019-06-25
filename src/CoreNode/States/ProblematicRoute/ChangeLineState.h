@@ -20,7 +20,7 @@ public:
         }
 
         data.lockedSteering= true;
-        data.steering = _dir*30;
+        data.steering = _dir*40;
 
         if(_deathTime <= std::chrono::steady_clock::now())
             State<Data>::_stateMachine->pop();

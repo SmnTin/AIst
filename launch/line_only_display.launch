@@ -1,0 +1,12 @@
+<launch>
+
+    <include
+            file="$(find aist)/launch/params.launch"
+            clear_params="false"
+            pass_all_args="true"/>
+    <rosparam param="display_result">True</rosparam>
+
+    <include file="$(find aist)/launch/camera0.launch" />
+    <node pkg="aist" type="line_node2" name="line_node" output="screen" />
+
+</launch>

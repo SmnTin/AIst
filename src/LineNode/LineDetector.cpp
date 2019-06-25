@@ -39,15 +39,30 @@ void LineDetector::setDirection(int dir) {
     _dir = dir;
 	switch(dir) {
 	case -1:
-		sorterCenter = window * 0.25;
+//		sorterCenter = window * 0.25;
 		break;
 	case 1:
-		sorterCenter = window * 0.75;
+//		sorterCenter = window * 0.75;
 		break;
     case 0:
     default:
-        sorterCenter = window / 2;
+//        sorterCenter = window / 2;
         break;
+	}
+}
+
+void LineDetector::updateRoiColStart(Mat &src) {
+	switch(_dir) {
+		case -1:
+			roiColStart = 0;
+			break;
+		case 1:
+			roiColStart = src.cols - window;
+			break;
+		case 0:
+		default:
+			roiColStart = (src.cols - window)/2;
+			break;
 	}
 }
 
@@ -121,8 +136,8 @@ int LineDetector::buildLine(Mat roi, int v, vector<Line> & lines, vector<Point> 
 						int dev_x = buildLine(roi, to, lines, pts, g, h);
 
 						//Finding nearestPointXDelta, nearestPointX
-						if(abs((dev_x + start.x)/2 - (sorterCenter + (roi.cols - window)/2)) < nearestPointXDelta) {
-							nearestPointXDelta = abs((dev_x + start.x)/2 - (sorterCenter + (roi.cols - window)/2));
+						if(abs((dev_x + start.x)/2 - (sorterCenter + roiColStart)) < nearestPointXDelta) {
+							nearestPointXDelta = abs((dev_x + start.x)/2 - (sorterCenter + roiColStart));
 							nearestPointX = (dev_x + start.x)/2;
 						}
 					}
@@ -164,8 +179,10 @@ bool LineDetector::checkForFillness(Mat &roi, Line line) {
 LineDetectorInfo LineDetector::detectLine(Mat & src, Mat & drawing) {
 	_offsetImage(src, cv::Scalar(255,255,255), imgOffset, 0);
 	_offsetImage(drawing, cv::Scalar(255,255,255), imgOffset, 0);
+
+	updateRoiColStart(src);
 	//ROI where the root is found
-	Rect roiRect((src.cols - window) / 2, roi_row_start, window, roi_height);
+	Rect roiRect(roiColStart, roi_row_start, window, roi_height);
 	//ROI where the tree is found
 	Rect bigRoiRect(0, src.rows - bigRoiHeight, src.cols, bigRoiHeight);
 
@@ -174,6 +191,8 @@ LineDetectorInfo LineDetector::detectLine(Mat & src, Mat & drawing) {
 	Mat thrMat;
 	preprocessImage(bigRoi, thrMat);
 //	imshow("thr", thrMat);
+
+    int deviation2 = superDetection(src, thrMat);
 
 	//extracting roi from the result
 	Mat roi = thrMat(Rect(roiRect.x, roiRect.y - src.rows + bigRoiHeight, roiRect.width, roiRect.height));
@@ -193,7 +212,7 @@ LineDetectorInfo LineDetector::detectLine(Mat & src, Mat & drawing) {
 //	int medianX = sorterCenter + (bigRoi.cols - window)/2;
 	int medianX = bigRoi.cols/2;
 	if(!centers.empty()) {
-		circle(drawing, Point((src.cols - window) / 2 + sorterCenter, roi_row_start+roi_height/2), 5, Scalar(0,0,255), 4, 8, 0);
+		circle(drawing, Point(roiColStart + sorterCenter, roi_row_start+roi_height/2), 5, Scalar(0,0,255), 4, 8, 0);
 		//showing the medianX
 
 //		medianX = (src.cols - window) / 2 + centers[0].x;
@@ -201,13 +220,13 @@ LineDetectorInfo LineDetector::detectLine(Mat & src, Mat & drawing) {
 		int medianXb = bigRoi.cols;
 		Point center;
 		for(int i = 0; i < (int)centers.size(); i++) {
-			if((centers[i].x < window/3 && _dir > 0) || (centers[i].x > window*2/3cmak && _dir < 0))
-				continue;
+//			if((centers[i].x < window/3 && _dir > 0) || (centers[i].x > window*2/3cmak && _dir < 0))
+//				continue;
 			vector<Line> curLines;
 			vector<Point> curPts;
 			vector<vector<int>> curG;
 			vector<int> curH;
-			Point startPnt = Point((src.cols - window) / 2 + centers[i].x, centers[i].y - src.rows + bigRoiHeight);
+			Point startPnt = Point(roiColStart + centers[i].x, centers[i].y - src.rows + bigRoiHeight);
 			curPts.push_back(startPnt);
 			curG.emplace_back();
 			curH.push_back(1);
@@ -218,7 +237,7 @@ LineDetectorInfo LineDetector::detectLine(Mat & src, Mat & drawing) {
 //                continue;
 
 			//sorting the potential centers and line averages by the distance from a sorting center which is set by LineDetector::setDirection(int dir = 0) function
-			if(abs(curMedianXb - (sorterCenter + (bigRoi.cols - window)/2)) < abs(medianXb - (sorterCenter + (bigRoi.cols - window)/2))) {
+			if(abs(curMedianXb - (sorterCenter + roiColStart)) < abs(medianXb - (sorterCenter + roiColStart)) ) {
 				center = centers[i];
 				medianXb = curMedianXb;
 //				cout << curLines.size() << endl;
@@ -231,7 +250,7 @@ LineDetectorInfo LineDetector::detectLine(Mat & src, Mat & drawing) {
         lost = false;
 //        lost = lines.empty();
 		if(!lost) {
-            circle(drawing, Point((src.cols - window) / 2 + center.x, roi_row_start + roi_height / 2), 5,
+            circle(drawing, Point(roiColStart + center.x, roi_row_start + roi_height / 2), 5,
                    Scalar(0, 255, 0), 4, 8, 0);
 //            medianX = (medianX+medianXb)/2;
             medianX = medianXb;
@@ -264,6 +283,7 @@ LineDetectorInfo LineDetector::detectLine(Mat & src, Mat & drawing) {
 	info.lost = lost;
 	info.fork = fork;
 	info.stopline = stopline;
+	info.deviation2 = deviation2;
 
 	drawResult(info, drawing);
 
@@ -343,7 +363,7 @@ void LineDetector::findRoots(Mat &src, vector<Point> &centers, bool &stopLine) {
 
 void LineDetector::drawResult(LineDetectorInfo &info, Mat &drawing) {
 	//ROI where the root is found
-	Rect roiRect((drawing.cols - window) / 2, roi_row_start, window, roi_height);
+	Rect roiRect(roiColStart, roi_row_start, window, roi_height);
 	//ROI where the tree is found
 	Rect bigRoiRect(0, drawing.rows - bigRoiHeight, drawing.cols, bigRoiHeight);
 
@@ -405,4 +425,27 @@ void LineDetector::stopVideoWriting() {
 
 LineDetector::~LineDetector() {
 	stopVideoWriting();
+}
+
+
+int LineDetector::superDetection(Mat src, Mat thrMat) {
+    int sum = 0;
+    int cnt = 0;
+    for(int T = 0; T < superRoiRows; ++T) {
+        Rect roiRect(roiColStart, roi_row_start - roi_height*T, window, roi_height);
+        Mat roi = thrMat(Rect(roiRect.x, roiRect.y - src.rows + bigRoiHeight, roiRect.width, roiRect.height));
+
+        vector<Point> centers;
+        bool stopline = false;
+        findRoots(roi, centers, stopline);
+
+        if (!centers.empty()) {
+            for (int i = 0; i < (int) centers.size(); i++) {
+			    cnt++;
+			    sum += roiColStart + centers[i].x;
+            }
+        }
+    }
+
+    return ((cnt > 0) ? (sum / cnt) : 0);
 }

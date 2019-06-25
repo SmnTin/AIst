@@ -17,6 +17,7 @@ Runner::Runner(ros::NodeHandle &node) : _node(node){
 }
 
 void Runner::_lineControlCb(const aist::LineControl &msg) {
+//    ROS_INFO("Direction: %d", msg.direction);
     _lineDetector->setDirection(msg.direction);
 }
 
@@ -70,6 +71,7 @@ void Runner::_publishResult(const LineDetectorInfo &info) {
     msgPub.stopline = info.stopline;
     msgPub.deviation = info.deviation;
     msgPub.oldDeviation = info.oldDeviation;
+    msgPub.deviation2 = info.deviation2;
     msgPub.header.stamp = ros::Time::now();
     msgPub.header.frame_id = "camera";
     msgPub.header.seq = _lineInfoPubSeq++;

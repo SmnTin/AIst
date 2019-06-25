@@ -31,6 +31,10 @@ Core::Core(ros::NodeHandle &node) : _node(node) {
     node.param("PID_K", _data.PID_K, 1.0);
     _data.pid = PID(P, I, D, minI, maxI);
 
+    _data.PID_P = P;
+    _data.PID_I = I;
+    _data.PID_D = D;
+
     std::cout << "[PID]:" << " P: " << P << " I: " << I << " D: " << D << " B: " << _data.PID_B << " K: " << _data.PID_K << std::endl;
 
     if(_mode == "UnknownPath") {
@@ -54,10 +58,14 @@ void Core::_lineInfoCb(const aist::LineInfo &msg) {
     _data.stopLine = msg.stopline;
     _data.forkLine = msg.fork;
     if(!_data.lockedSteering) {
-        if (!msg.lost) {
-            _data.steering = (float) _data.pid.calculate(msg.deviation, _data.steering);
-        } else if(!_data.returnToLineAlgo) {
-            _data.steering = 0;
+        if(!_data.useDeviation2) {
+            if (!msg.lost) {
+                _data.steering = (float) _data.pid.calculate(msg.deviation, _data.steering);
+            } else if (!_data.returnToLineAlgo) {
+                _data.steering = 0;
+            }
+        } else {
+            _data.steering = (float) _data.pid.calculate(msg.deviation2, _data.steering);
         }
     }
 }

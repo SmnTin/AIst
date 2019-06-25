@@ -27,7 +27,7 @@ private:
     const std::chrono::milliseconds _slowDownTime{2000};
     const std::chrono::milliseconds _turningTime{4000};
 
-    float _defaultSpeed = 0.5f;
+    float _defaultSpeed = 0.4f;
 
     bool _turnRightSeen = false;
     bool _turnLeftSeen = false;
