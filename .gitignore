@@ -1,2 +1,5 @@
-cmake-build-debug
+cmake-build-debug/
+build/
+.vscode/
 assets/output.mpeg
+.DS_STORE
